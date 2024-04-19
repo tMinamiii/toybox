@@ -26,24 +26,27 @@ func launchMySQL(ctx context.Context) testcontainers.Container {
 		log.Fatalf("failed to create network: %s", err)
 	}
 
-	mysqlC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Image: "mysql:8.0.32",
-			Env: map[string]string{
-				"MYSQL_ROOT_HOST":            "%",
-				"MYSQL_DATABASE":             dbname,
-				"MYSQL_ALLOW_EMPTY_PASSWORD": "yes",
-			},
-			Networks:     []string{net.Name},
-			ExposedPorts: []string{dbport},
-			WaitingFor:   wait.ForListeningPort(dbport),
-			HostConfigModifier: func(cfg *container.HostConfig) {
-				cfg.AutoRemove = true
-				cfg.NetworkMode = network.NetworkBridge
-			},
+	req := testcontainers.ContainerRequest{
+		Image: "mysql:8.0.32",
+		Env: map[string]string{
+			"MYSQL_ROOT_HOST":            "%",
+			"MYSQL_DATABASE":             dbname,
+			"MYSQL_ALLOW_EMPTY_PASSWORD": "yes",
 		},
-		Started: true,
-	})
+		Networks:     []string{net.Name},
+		ExposedPorts: []string{dbport},
+		WaitingFor:   wait.ForListeningPort(dbport),
+		HostConfigModifier: func(cfg *container.HostConfig) {
+			cfg.AutoRemove = true
+			cfg.NetworkMode = network.NetworkBridge
+		},
+	}
+
+	mysqlC, err := testcontainers.GenericContainer(ctx,
+		testcontainers.GenericContainerRequest{
+			ContainerRequest: req,
+			Started:          true,
+		})
 	if err != nil {
 		log.Fatalf("failed to create mysql container: %s", err)
 	}
@@ -65,27 +68,28 @@ func migrate(ctx context.Context, mysqlC testcontainers.Container) {
 	port := nat.Port(dbport).Int()
 	url := fmt.Sprintf("mysql://root:@%s:%d/%s", ip, port, dbname)
 
-	_, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Image: "arigaio/atlas",
-			Cmd:   []string{"migrate", "apply", "-u", url},
-			HostConfigModifier: func(cfg *container.HostConfig) {
-				cfg.AutoRemove = true
-				cfg.NetworkMode = network.NetworkBridge
-				cfg.Mounts = []mount.Mount{
-					{
-						Type:     mount.TypeBind,
-						Source:   project.Root() + "/ent/migrate/migrations",
-						Target:   "/migrations",
-						ReadOnly: true,
-					},
-				}
-			},
-			Networks:   networks,
-			WaitingFor: wait.ForExit(),
+	req := testcontainers.ContainerRequest{
+		Image: "arigaio/atlas",
+		Cmd:   []string{"migrate", "apply", "-u", url},
+		HostConfigModifier: func(cfg *container.HostConfig) {
+			cfg.AutoRemove = true
+			cfg.NetworkMode = network.NetworkBridge
+			cfg.Mounts = []mount.Mount{
+				{
+					Type:     mount.TypeBind,
+					Source:   project.Root() + "/testcontainers/migrations",
+					Target:   "/migrations",
+					ReadOnly: true,
+				},
+			}
 		},
-		Started: true,
-		Logger:  testcontainers.Logger,
+		Networks:   networks,
+		WaitingFor: wait.ForExit(),
+	}
+
+	_, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
 	})
 	if err != nil {
 		log.Fatalf("failed to create atlas container: %s", err)
