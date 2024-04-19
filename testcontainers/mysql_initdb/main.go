@@ -17,6 +17,10 @@ import (
 
 const dbname = "testdb"
 
+// mount
+// docker run --name ubuntu01 -d -it \
+// --mount type=bind,src=$(pwd)/mydir,dst=/vol \
+// ubuntu /bin/bash
 func launchMySQL(ctx context.Context) testcontainers.Container {
 	mysqlC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
@@ -34,7 +38,7 @@ func launchMySQL(ctx context.Context) testcontainers.Container {
 				cfg.Mounts = []mount.Mount{
 					{
 						Type:     mount.TypeBind,
-						Source:   project.Root() + "/ent/migrate/migrations",
+						Source:   project.Root() + "/testcontainers/migrations",
 						Target:   "/docker-entrypoint-initdb.d",
 						ReadOnly: true,
 					},
