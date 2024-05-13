@@ -33,7 +33,6 @@ func launchMySQL(ctx context.Context) testcontainers.Container {
 			ExposedPorts: []string{"3306/tcp"},
 			WaitingFor:   wait.ForListeningPort("3306/tcp"),
 			HostConfigModifier: func(cfg *container.HostConfig) {
-				cfg.AutoRemove = true
 				cfg.NetworkMode = network.NetworkBridge
 				cfg.Mounts = []mount.Mount{
 					{

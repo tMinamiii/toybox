@@ -37,7 +37,6 @@ func launchMySQL(ctx context.Context) testcontainers.Container {
 		ExposedPorts: []string{dbport},
 		WaitingFor:   wait.ForListeningPort(dbport),
 		HostConfigModifier: func(cfg *container.HostConfig) {
-			cfg.AutoRemove = true
 			cfg.NetworkMode = network.NetworkBridge
 		},
 	}
@@ -46,7 +45,8 @@ func launchMySQL(ctx context.Context) testcontainers.Container {
 		testcontainers.GenericContainerRequest{
 			ContainerRequest: req,
 			Started:          true,
-		})
+		},
+	)
 	if err != nil {
 		log.Fatalf("failed to create mysql container: %s", err)
 	}
@@ -72,7 +72,6 @@ func migrate(ctx context.Context, mysqlC testcontainers.Container) {
 		Image: "arigaio/atlas",
 		Cmd:   []string{"migrate", "apply", "-u", url},
 		HostConfigModifier: func(cfg *container.HostConfig) {
-			cfg.AutoRemove = true
 			cfg.NetworkMode = network.NetworkBridge
 			cfg.Mounts = []mount.Mount{
 				{
