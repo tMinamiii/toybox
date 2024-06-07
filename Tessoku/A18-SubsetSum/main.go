@@ -53,32 +53,34 @@ func main() {
 	var buf = make([]byte, max)
 	sc.Buffer(buf, 5000000)
 
-	NWLine := SplitNextLine(sc)
-	N := Atoi(NWLine[0])
-	W := Atoi(NWLine[1])
+	NSLine := SplitNextLine(sc)
+	N := Atoi(NSLine[0])
+	S := Atoi(NSLine[1])
 
-	w := make([]int, 0, N)
-	v := make([]int, 0, N)
-	for i := 0; i < N; i++ {
-		wvLine := SplitNextLine(sc)
-		w = append(w, Atoi(wvLine[0]))
-		v = append(v, Atoi(wvLine[1]))
+	A := make([]int, 0, N)
+	ALine := SplitNextLine(sc)
+	for _, v := range ALine {
+		A = append(A, Atoi(v))
 	}
 
-	dp := make([][]int, N+1)
+	dp := make([][]bool, N+1)
 	for i := 0; i < N+1; i++ {
-		dp[i] = make([]int, 100010)
+		dp[i] = make([]bool, 10010)
 	}
+	dp[0][0] = true
 
-	for i := 0; i < N; i++ {
-		for sumW := 0; sumW <= W; sumW++ {
-			// i番目の品物をはこぶ場合
-			if sumW-w[i] >= 0 {
-				dp[i+1][sumW] = Max(dp[i+1][sumW], dp[i][sumW-w[i]]+v[i])
+	for i := 1; i < N+1; i++ {
+		for j := 0; j < S+1; j++ {
+			if dp[i-1][j] {
+				dp[i][j] = dp[i-1][j]
+				dp[i][j+A[i-1]] = true
 			}
-			dp[i+1][sumW] = Max(dp[i+1][sumW], dp[i][sumW])
 		}
 	}
 
-	fmt.Println(dp[N][W])
+	if dp[N][S] {
+		fmt.Println("Yes")
+	} else {
+		fmt.Println("No")
+	}
 }

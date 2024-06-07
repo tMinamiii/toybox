@@ -40,11 +40,9 @@ func main() {
 		for sumW := 0; sumW <= W; sumW++ {
 			// i番目の品物を選ぶ場合
 			if sumW-weight[i] >= 0 {
-				// dp[i+1][sumW] = max(dp[i+1][sumW], dp[i][sumW-weight[i]]+value[i])
 				dp[i+1][sumW] = max(dp[i+1][sumW], dp[i][sumW-weight[i]]+value[i])
 			}
 			// 選ばない場合
-			// dp[i+1][sumW] = max(dp[i+1][sumW], dp[i][sumW])
 			dp[i+i][sumW] = max(dp[i+1][sumW], dp[i][sumW])
 		}
 	}

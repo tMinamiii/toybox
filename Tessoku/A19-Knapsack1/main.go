@@ -13,11 +13,7 @@ func NextLine(sc *bufio.Scanner) string {
 	return sc.Text()
 }
 
-func SplitNextLine(sc *bufio.Scanner) []string {
-	sc.Scan()
-	s := sc.Text()
-	return strings.Split(s, " ")
-}
+func Split(s string) []string { return strings.Split(s, " ") }
 
 func Atoi(s string) int {
 	v, _ := strconv.Atoi(s)
@@ -53,28 +49,31 @@ func main() {
 	var buf = make([]byte, max)
 	sc.Buffer(buf, 5000000)
 
-	NWLine := SplitNextLine(sc)
+	NWLine := Split(NextLine(sc))
 	N := Atoi(NWLine[0])
 	W := Atoi(NWLine[1])
 
-	w := make([]int, 0, N)
-	v := make([]int, 0, N)
+	weight := make([]int, 0, N)
+	value := make([]int, 0, N)
 	for i := 0; i < N; i++ {
-		wvLine := SplitNextLine(sc)
-		w = append(w, Atoi(wvLine[0]))
-		v = append(v, Atoi(wvLine[1]))
+		ALine := Split(NextLine(sc))
+		weight = append(weight, Atoi(ALine[0]))
+		value = append(value, Atoi(ALine[1]))
 	}
 
-	dp := make([][]int, N+1)
-	for i := 0; i < N+1; i++ {
-		dp[i] = make([]int, 100010)
+	// 動的計画法のメモの初期化
+	// 最大化問題なので、初期値は0にする
+	// 最小化はINF, 最大化は0
+	// N+10, W+10としてメモリ領域を多めに確保しておく
+	dp := make([][]int, N+10)
+	for i := 0; i < N+10; i++ {
+		dp[i] = make([]int, W+10)
 	}
 
 	for i := 0; i < N; i++ {
 		for sumW := 0; sumW <= W; sumW++ {
-			// i番目の品物をはこぶ場合
-			if sumW-w[i] >= 0 {
-				dp[i+1][sumW] = Max(dp[i+1][sumW], dp[i][sumW-w[i]]+v[i])
+			if sumW-weight[i] >= 0 {
+				dp[i+1][sumW] = Max(dp[i+1][sumW], dp[i][sumW-weight[i]]+value[i])
 			}
 			dp[i+1][sumW] = Max(dp[i+1][sumW], dp[i][sumW])
 		}
