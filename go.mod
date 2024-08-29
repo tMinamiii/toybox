@@ -1,6 +1,6 @@
 module github.com/tMinamiii/toybox
 
-go 1.22.3
+go 1.23.0
 
 require (
 	github.com/docker/docker v25.0.5+incompatible

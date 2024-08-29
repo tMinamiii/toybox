@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -euo
 
 usage() {
     echo "usage `basename $0` [options] <image-uri>"
